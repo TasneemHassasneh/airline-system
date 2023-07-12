@@ -1,43 +1,86 @@
-const flightEvents = require('../events');
+// require('dotenv').config();
+// const { faker } = require('@faker-js/faker');
+// const port = process.env.PORT || 8000;
+// const host = `http://localhost:${port}`;
 
-const airline = 'Royal Jordanian Airlines';
+// const io = require('socket.io-client');
+// const socket = io.connect(host);
 
-setInterval(() => {
-  const flightID = generateRandomID();
-  const pilot = generateRandomName();
-  const destination = generateRandomDestination();
+// // Function to generate random flight details
+// const generateFlightDetails = () => {
 
-  console.log(`Manager: new flight with ID '${flightID}' has been scheduled`);
+//   const uuid = require('uuid');
 
-  const flightDetails = {
-    airLine: airline,
-    flightID: flightID,
-    pilot: pilot,
-    destination: destination,
+//   const flightID = uuid.v4();
+//   const airLine = 'Royal Jordanian Airlines';
+//   const pilot = faker.person.fullName();
+//   const destination = faker.location.city();
+
+//   return {
+//     flightID,
+//     airLine,
+//     pilot,
+//     destination,
+//   };
+// };
+
+// socket.on('connect', () => {
+//   console.log('Manager: Connected to the server');
+// });
+
+
+// setInterval(() => {
+//   const flightDetails = generateFlightDetails();
+//   console.log(`Manager: New flight with ID '${flightDetails.flightID}' has been scheduled`);
+
+
+//   socket.emit('new-flight', flightDetails);
+// }, 10000);
+
+
+// socket.on('arrived', (flightDetails) => {
+//   console.log(`Manager: We're greatly thankful for the amazing flight, ${flightDetails.pilot}`);
+// });
+
+
+require('dotenv').config();
+const { faker } = require('@faker-js/faker');
+const port = process.env.PORT || 8000;
+const host = `http://localhost:${port}`;
+
+const io = require('socket.io-client');
+const socket = io.connect(host);
+
+const generateFlightDetails = () => {
+  
+  const uuid = require('uuid');
+
+  const flightID = uuid.v4();
+  const airLine = 'Royal Jordanian Airlines';
+  const pilot = faker.person.fullName();;
+  const destination = faker.location.city();
+
+  return {
+    flightID,
+    airLine,
+    pilot,
+    destination,
   };
+};
 
-  flightEvents.emit('new-flight', flightDetails);
-}, 10000);
+const flightDetails = generateFlightDetails();
 
-flightEvents.on('arrived', (flightDetails) => {
-  console.log(`Manager: we’re greatly thankful for the amazing flight, ${flightDetails.pilot}`);
+socket.on('connect', () => {
+  console.log('Manager: Connected to the server');
+
+  setInterval(() => {
+    // Alert when a new flight is scheduled
+    console.log(`Manager: New flight with ID '${flightDetails.flightID}' has been scheduled`);
+    // Log the new flight event with its ID to the console
+    console.log(`Manager: We’re greatly thankful for the amazing flight, ${flightDetails.pilot}`);
+  }, 10000);
 });
 
-function generateRandomID() {
-  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let id = '';
-  for (let i = 0; i < 10; i++) {
-    id += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return id;
-}
-
-function generateRandomName() {
-  const names = ['John Doe', 'Jane Smith', 'Michael Johnson', 'Emily Davis', 'David Wilson'];
-  return names[Math.floor(Math.random() * names.length)];
-}
-
-function generateRandomDestination() {
-  const destinations = ['London', 'Paris', 'New York', 'Tokyo', 'Sydney'];
-  return destinations[Math.floor(Math.random() * destinations.length)];
-}
+socket.on('arrived', (flightDetails) => {
+  console.log(`Manager: Flight with ID '${flightDetails.flightID}' has arrived`);
+});
