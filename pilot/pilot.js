@@ -28,6 +28,16 @@ const generateFlightDetails = () => {
 const flightDetails = generateFlightDetails();
 socket.on('connect', () => {
   console.log('Pilot: Connected to the server');
+
+  socket.emit('get-all');
+
+  setTimeout(() => {
+    const flightId = '332u443673r32yuf463';
+    socket.emit('flight-arrived', flightId);
+
+    // Delete the flight from the message queue
+    socket.emit('delete', flightId);
+  }, 5000);
 });
 
 socket.on('new-flight', (flightDetails) => {
