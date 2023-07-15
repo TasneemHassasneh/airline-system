@@ -6,12 +6,40 @@ const io = socketIO(server);
 require('dotenv').config();
 const PORT = process.env.PORT || 8000;
 
+const queue = {
+  flights: {}
+};
+
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
 io.on('connection', (socket) => {
   console.log('System: New connection established');
+  socket.on('new-flight', (flightDetails) => {
+    const flightId = generateFlightId();
+    queue.flights[flightId] = {
+      event: 'new-flight',
+      details: flightDetails
+    };
+    console.log(`System: New flight with ID '${flightId}' has been scheduled`);
+
+    // Emit 'flight' event with all stored messages as payload back to the pilot
+    const allFlights = Object.values(queue.flights);
+    socket.emit('flight', allFlights);
+
+    // Delete all messages from the message queue
+    queue.flights = {};
+  });
+
+  socket.on('get-all', () => {
+    const allFlights = Object.values(queue.flights);
+    socket.emit('flight', allFlights);
+  });
+
+  socket.on('delete', (flightId) => {
+    delete queue.flights[flightId];
+  });
 });
 
 const airlineIO = io.of('/airline');
